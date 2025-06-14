@@ -96,19 +96,6 @@ frontend/
 
 
 
-| Método | Endpoint                                    | Descripción                                     | Entrada (Body/Params)                                                                                                                                          | Respuesta (Ejemplo)                                                                                                                   |
-| ------ | ------------------------------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| POST   | `/solicitudes`                              | Crear nueva solicitud de compra                 | JSON: <br> <pre>{ "titulo": "...", "descripcion": "...", "monto": 0, "solicitante": "...", "aprobadores": \[ {"nombre": "...", "correo": "..."}, ... ] }</pre> | <pre>{ "solicitudId": "...", "mensaje": "...", "links": \[ "[https://dominio.com/approve](https://dominio.com/approve)?..." ] }</pre> |
-| GET    | `/solicitudes`                              | Listar todas las solicitudes (para solicitante) | —                                                                                                                                                              | Array de solicitudes<br><pre>\[{"id": {"S": "..."}, ... }]</pre>                                                                      |
-| GET    | `/solicitudes/validar-acceso?token={token}` | Validar token de aprobador y obtener detalle    | Param: token (en query)                                                                                                                                        | <pre>{ "aprobador": { ... }, "solicitud": { ... } }</pre>                                                                             |
-| POST   | `/solicitudes/firma`                        | Firmar o rechazar una solicitud                 | JSON: <br><pre>{ "solicitudId": "...", "token": "...", "accion": "aprobar" }</pre>                                                                             | <pre>{ "message": "...", "fechaFirma": "..." }</pre>                                                                                  |
-| GET    | `/api/solicitudes/{id}/evidencia.pdf`       | Descargar PDF de evidencias                     | Param: id (en path)                                                                                                                                            | <pre>{ "url": "[https://...amazonaws.com/...pdf](https://...amazonaws.com/...pdf)?..." }</pre>                                        |
-
-
-
-
-
----
 
 ## 🧪 Cómo probar los endpoints (Postman/curl)
 
@@ -288,10 +275,6 @@ npm run test         # Corre todos los tests
 npm run test:coverage  # Genera reporte de cobertura
 ```
 
-Frontend:
-```bash
-https://d1c7drnfc9stg6.cloudfront.net/
-```
 
 
 -----------------------------|---------|----------|---------|---------|
@@ -308,6 +291,68 @@ Tests:       30 passed, 30 total
 Time:        10.875 s
 
 
+🖥️ Frontend (Microfrontends)
+El frontend está dividido en microfrontends usando React + Vite, para separar el flujo de solicitante y aprobador, además de una ShellApp para la integración.
+
+📦 Estructura
+shell-app: Microfrontend principal (shell), orquestador de los submódulos.
+
+aprobador-app: Microfrontend para el flujo de aprobadores (validación de token, firma/rechazo).
+
+solicitante-app: Microfrontend para el solicitante (crear, listar solicitudes, descargar PDF).
+
+
+```bash
+frontend/
+├── shell-app/
+├── aprobador-app/
+├── solicitante-app/
+└── README.md
+```
+
+🛠️ Tecnologías principales
+Framework: React 19 + Vite
+
+Librerías: React Router, axios
+
+Testing: Vitest + @testing-library/react
+
+🧪 Pruebas en el Frontend
+Cada microfrontend cuenta con pruebas unitarias cubriendo los principales flujos y componentes, usando Vitest y Testing Library.
+
+Ubicación: Dentro de cada microfrontend, en la carpeta /test/ o /src/__tests__/
+
+Cobertura: Superior al 60% en los componentes y servicios principales.
+
+▶️ ¿Cómo ejecutar los tests?
+Ejemplo para solicitante-app (repite en cada microfrontend):
+```bash
+cd frontend/solicitante-app
+npm install
+npm run test
+# Para ver cobertura
+npm run coverage
+```
+
+--------------------------|---------|----------|---------|---------|
+File                      | % Stmts | % Branch | % Funcs | % Lines |
+--------------------------|---------|----------|---------|---------|
+All files                 |   84.93 |   92.72  |   95    |  84.93  |
+src/pages                 |   98.97 |   96.15  |  100    |  98.97  |
+src/routes                |   100   |   100    |  100    |  100    |
+src/services              |   100   |   83.33  |  100    |  100    |
+src/utils                 |   100   |   100    |  100    |  100    |
+--------------------------|---------|----------|---------|---------|
+Test Files: 6 passed (6)
+Tests:      17 passed (17)
+
+
+
+Comentario: El despligue de los microfrontend se realizo manualmente, Creando un bucket S3 en el cual se alojan los 3 MicroFrontend y haciendo la configuracion de cloudfront
+
+```bash
+https://d1c7drnfc9stg6.cloudfront.net/
+```
 
 
 
