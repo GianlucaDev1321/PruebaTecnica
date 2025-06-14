@@ -15,7 +15,7 @@ Este proyecto implementa un sistema de aprobaciones donde tres aprobadores deben
 ---
 
 ## 📁 Estructura del Proyecto
-
+```bash
 ## Estructura del Backend
 backend/
 │
@@ -51,9 +51,10 @@ backend/
 ├── serverless.yml
 ├── tsconfig.json
 └── README.md
-
+```
 
 ## Estructura del Frontend (Microfrontends)
+```bash
 frontend/
 │
 ├── aprobador-app/
@@ -82,7 +83,7 @@ frontend/
 │   └── ...estructura similar...
 │
 └── README.md
-
+```
 ---
 
 ## 🧠 Supuestos y Decisiones de Implementación
