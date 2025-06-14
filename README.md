@@ -131,14 +131,15 @@ curl -X POST https://<TU-API-GATEWAY>/solicitudes \
       { "nombre": "Luis", "correo": "luis@example.com" }
     ]
   }'
+```
 
 Usando Postman:
-Crea una nueva petición POST.
+1. Crea una nueva petición POST.
 
-URL: https://<TU-API-GATEWAY>/solicitudes
+2. URL: https://<TU-API-GATEWAY>/solicitudes
 
-Body → raw → JSON:
-
+3. Body → raw → JSON:
+```bash
 {
   "titulo": "Compra de equipos 2",
   "descripcion": "Adquisición de 3 laptops",
@@ -150,8 +151,92 @@ Body → raw → JSON:
     { "nombre": "Luis", "correo": "luis@example.com" }
   ]
 }
+```
+4. Presiona Send y observa la respuesta.
+
+2. Validar acceso de un aprobador
+GET /solicitudes/validar-acceso?token={token}
+
+```bash
+curl "https://<TU-API-GATEWAY>/solicitudes/validar-acceso?token=<TOKEN>"
+```
+
+3. Firmar o rechazar una solicitud
+POST /solicitudes/firma
+
+```bash
+curl -X POST https://<TU-API-GATEWAY>/solicitudes/firma \
+  -H "Content-Type: application/json" \
+  -d '{
+    "solicitudId": "ID_SOLICITUD",
+    "token": "TOKEN_APROBADOR",
+    "accion": "aprobar"
+  }'
+```
+
+
+4. Descargar PDF de evidencias
+GET /api/solicitudes/{id}/evidencia.pdf
+
+```bash
+curl "https://<TU-API-GATEWAY>/api/solicitudes/ID_SOLICITUD/evidencia.pdf"
+```
+
+
+5. Listar todas las solicitudes
+GET /solicitudes
+
+```bash
+curl "https://<TU-API-GATEWAY>/solicitudes"
+```
+
+
+🚀 Instalación y Despliegue
+Backend
+Instalar dependencias
+
+```bash
+cd backend
+npm install
+```
+Desplegar en AWS usando Serverless Framework
+
+```bash
+serverless deploy
+```
+
+Esto crea todos los recursos necesarios en AWS (Lambdas, API Gateway, DynamoDB, S3).
+
+Variables de entorno por defecto
+
+Las tablas de DynamoDB y el bucket S3 se crean automáticamente.
+
+Puedes personalizar los nombres en serverless.yml según tu entorno.
+
+CORS
+
+Durante el desarrollo, los endpoints permiten solicitudes desde cualquier origen (origin: '*'), para facilitar las pruebas desde local o desde cualquier frontend.
+
+En producción, se recomienda restringir los orígenes a dominios autorizados.
 
 
 
-👨‍💻 Autor
+🌍 URLs de despliegue en la nube
+Backend (API Gateway):
+
+```bash
+POST   https://wkot1znpzj.execute-api.us-east-2.amazonaws.com/dev/solicitudes
+GET    https://wkot1znpzj.execute-api.us-east-2.amazonaws.com/dev/solicitudes/validar-acceso
+POST   https://wkot1znpzj.execute-api.us-east-2.amazonaws.com/dev/solicitudes/firma
+GET    https://wkot1znpzj.execute-api.us-east-2.amazonaws.com/dev/api/solicitudes/{id}/evidencia.pdf
+GET    https://wkot1znpzj.execute-api.us-east-2.amazonaws.com/dev/solicitudes
+```
+
+
+
+
+
+
+
+
 Desarrollado por Gianluca Sanchez como parte de la prueba técnica para Fiduoccidente.
