@@ -1,0 +1,156 @@
+service: PruebaTecnica
+
+frameworkVersion: '4'
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  region: us-east-2
+  environment:
+    SOLICITUDES_TABLE: Solicitudes
+    APROBADORES_TABLE: Aprobadores
+    OTP_TABLE: OTP
+    EVIDENCIAS_BUCKET: fidu-evidencias-pdf
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:GetItem
+            - dynamodb:UpdateItem
+            - dynamodb:Query
+            - dynamodb:Scan
+          Resource:
+             - arn:aws:dynamodb:us-east-2:*:table/Solicitudes  #320866336368 id de cuenta
+             - arn:aws:dynamodb:us-east-2:*:table/Aprobadores
+             - arn:aws:dynamodb:us-east-2:*:table/Aprobadores/index/SolicitudIndex
+             - arn:aws:dynamodb:us-east-2:*:table/OTP
+             - arn:aws:dynamodb:us-east-2:*:table/OTP/index/TokenIndex
+        - Effect: Allow
+          Action:
+            - s3:PutObject
+            - s3:GetObject
+          Resource: arn:aws:s3:::fidu-evidencias-pdf/*
+
+functions:
+  createSolicitud:
+    handler: src/interfaces/handlers/createSolicitud.handler
+    events:
+      - http:
+          path: solicitudes
+          method: post
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+            allowCredentials: false
+
+  validarAcceso:
+    handler: src/interfaces/handlers/validarAcceso.handler
+    events:
+      - http:
+          path: solicitudes/validar-acceso
+          method: get
+          cors: true
+
+  firmarSolicitud:
+    handler: src/interfaces/handlers/firmarSolicitud.handler
+    events:
+      - http:
+          path: solicitudes/firma
+          method: post
+          cors: true
+
+  descargarPdf:
+    handler: src/interfaces/handlers/descargarPdf.handler
+    events:
+      - http:
+          path: api/solicitudes/{id}/evidencia.pdf
+          method: get
+          cors: true
+
+  getAllSolicitudes:
+    handler: src/interfaces/handlers/listarSolicitudes.handler
+    events:
+      - http:
+          path: solicitudes
+          method: get
+          cors: true
+
+
+plugins:
+  - serverless-offline
+  - serverless-apigw-binary
+
+custom:
+  apigwBinary:
+    types:
+      - '*/*'
+
+resources:
+  Resources:
+    SolicitudesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: Solicitudes
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+
+    AprobadoresTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: Aprobadores
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: solicitudId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: SolicitudIndex
+            KeySchema:
+              - AttributeName: solicitudId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+        BillingMode: PAY_PER_REQUEST
+
+
+    OTPTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: OTP
+        AttributeDefinitions:
+          - AttributeName: aprobadorId
+            AttributeType: S
+          - AttributeName: token
+            AttributeType: S
+        KeySchema:
+          - AttributeName: aprobadorId
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: TokenIndex
+            KeySchema:
+              - AttributeName: token
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+        BillingMode: PAY_PER_REQUEST
+
+    EvidenciasBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: fidu-evidencias-pdf
+        AccessControl: Private

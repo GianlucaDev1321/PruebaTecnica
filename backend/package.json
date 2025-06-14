@@ -1,0 +1,42 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "jest",
+    "test:coverage": "jest --coverage"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.149",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^24.0.0",
+    "@types/pdfkit": "^0.14.0",
+    "@types/stream-buffers": "^3.0.7",
+    "jest": "^30.0.0",
+    "serverless": "^4.17.0",
+    "serverless-apigw-binary": "^0.4.4",
+    "serverless-dynamodb-local": "^0.2.40",
+    "serverless-offline": "^14.4.0",
+    "ts-jest": "^29.4.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.826.0",
+    "@aws-sdk/client-s3": "^3.828.0",
+    "@aws-sdk/lib-dynamodb": "^3.826.0",
+    "@aws-sdk/s3-request-presigner": "^3.828.0",
+    "aws-sdk": "^2.1692.0",
+    "pdf-lib": "^1.17.1",
+    "pdfkit": "^0.17.1",
+    "stream-buffers": "^3.0.3",
+    "uuid": "^11.1.0"
+  }
+}
