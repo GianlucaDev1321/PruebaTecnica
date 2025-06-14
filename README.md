@@ -232,8 +232,80 @@ GET    https://wkot1znpzj.execute-api.us-east-2.amazonaws.com/dev/api/solicitude
 GET    https://wkot1znpzj.execute-api.us-east-2.amazonaws.com/dev/solicitudes
 ```
 
+Frontend
 
 
+
+🧪 Pruebas y Cobertura (Backend)
+El backend está cubierto con pruebas unitarias usando Jest, enfocadas en los casos de uso principales y la lógica de negocio.
+Se mantiene una cobertura superior al 60%, como lo exige la prueba.
+
+Framework: Jest
+
+Ubicación de tests:
+
+Carpeta src/tests/ (organizada por casos de uso, repos, etc.)
+
+▶️ ¿Cómo ejecutar los tests?
+Instala las dependencias (si no lo has hecho):
+
+
+```bash
+
+npm install
+
+```
+
+
+El backend cuenta con pruebas unitarias robustas usando Jest, superando ampliamente el objetivo mínimo exigido en la prueba técnica.
+
+Framework: Jest
+
+Ubicación: src/tests/
+
+Cobertura total:
+
+Statements: 94.7%
+
+Branches: 82.45%
+
+Functions: 91.89%
+
+Lines: 94.9%
+
+📦 Estructura de tests
+Casos de uso: 100% cubiertos (application/usecases)
+
+Servicios/Repositorios: cobertura alta (>90% en general)
+
+Mocks y configuración: 100% cubiertos
+
+▶️ Ejecutar los tests
+
+```bash
+npm install
+npm run test         # Corre todos los tests
+npm run test:coverage  # Genera reporte de cobertura
+```
+
+Frontend:
+```bash
+https://d1c7drnfc9stg6.cloudfront.net/
+```
+
+
+-----------------------------|---------|----------|---------|---------|
+File                         | % Stmts | % Branch | % Funcs | % Lines |
+-----------------------------|---------|----------|---------|---------|
+All files                    |   94.7  |   82.45  |  91.89  |   94.9  |
+application/usecases         |  98.88  |   92.59  |   100   |  98.79  |
+config                       |   100   |   100    |   100   |   100   |
+infrastructure/db/dynamodb   |  90.42  |   60     |   88    |  90.14  |
+infrastructure/mail          |   100   |   100    |   100   |   100   |
+-----------------------------|---------|----------|---------|---------|
+Test Suites: 8 passed, 8 total
+Tests:       30 passed, 30 total
+Time:        10.875 s
 
 
 
