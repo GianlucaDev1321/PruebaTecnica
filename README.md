@@ -4,102 +4,152 @@
 
 Este proyecto implementa un sistema de aprobaciones donde tres aprobadores deben firmar digitalmente una solicitud. Al completarse las firmas, se genera un PDF de evidencia que se almacena en S3 y puede descargarse mediante un endpoint seguro.
 
-## 🛠️ Tecnologías y Arquitectura
+## 🛠️ Tecnologías 
 
 - **Backend**: Node.js + TypeScript
 - **Frontend**: React.js
 - **Infraestructura**: AWS Lambda, API Gateway, DynamoDB, S3
-- **Arquitectura**: Clean Architecture
 - **Despliegue**: Serverless Framework
-- **Testing**: Jest (Cobertura superior al 97%)
+- **Testing**: Jest y Vitest
 
 ---
 
 ## 📁 Estructura del Proyecto
 
+## Estructura del Backend
 backend/
+│
+├── .serverless/
+├── coverage/
+├── node_modules/
 ├── src/
-│ ├── application/ # Casos de uso
-│ ├── domain/ # Entidades y tipos
-│ ├── infrastructure/
-│ │ ├── db/dynamodb/ # Repositorios para DynamoDB
-│ │ ├── s3/ # Generador de PDF
-│ │ └── mail/ # Simulación de envío de correos
-│ └── config/ # Configuración del proyecto
-├── tests/ # Pruebas unitarias
-├── serverless.yml # Configuración del despliegue
+│   ├── application/
+│   │   ├── dtos/
+│   │   └── usecases/
+│   ├── config/
+│   │   └── config.ts
+│   ├── domain/
+│   │   └── entities/
+│   │       ├── Aprobador.ts
+│   │       └── Solicitud.ts
+│   ├── infrastructure/
+│   │   ├── db/
+│   │   ├── mail/
+│   │   └── s3/
+│   ├── interfaces/
+│   │   └── handlers/
+│   │       ├── createSolicitud.ts
+│   │       ├── descargarPdf.ts
+│   │       ├── firmarSolicitud.ts
+│   │       ├── listarSolicitudes.ts
+│   │       └── validarAcceso.ts
+│   └── tests/
+├── .gitignore
+├── jest.config.js
+├── package.json
+├── package-lock.json
+├── serverless.yml
+├── tsconfig.json
+└── README.md
+
+
+## Estructura del Frontend (Microfrontends)
+frontend/
+│
+├── aprobador-app/
+│   ├── coverage/
+│   ├── dist/
+│   ├── node_modules/
+│   ├── public/
+│   ├── src/
+│   ├── test/
+│   ├── .gitignore
+│   ├── eslint.config.js
+│   ├── index.html
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── README.md
+│   ├── tsconfig.app.json
+│   ├── tsconfig.json
+│   ├── tsconfig.node.json
+│   ├── vite.config.ts
+│   ├── vitest.setup.ts
+│
+├── shell-app/
+│   └── ...estructura similar...
+│
+├── solicitante-app/
+│   └── ...estructura similar...
+│
+└── README.md
+
+---
+
+## 🧠 Supuestos y Decisiones de Implementación
+
+- El flujo requiere **exactamente 3 aprobadores** por cada solicitud.
+- El envío de emails de aprobación es **simulado** y queda registrado en logs.
+- El **OTP** es único para cada aprobador y válido por 3 minutos.
+- El PDF de evidencias se genera automáticamente cuando los 3 aprobadores han firmado.
+- El frontend usa microfrontends para separar los flujos de aprobador y solicitante.
+- Los test cubren al menos el 60% de los casos.
+
+
+
+| Método | Endpoint                                    | Descripción                                     | Entrada (Body/Params)                                                                                                                                          | Respuesta (Ejemplo)                                                                                                                   |
+| ------ | ------------------------------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| POST   | `/solicitudes`                              | Crear nueva solicitud de compra                 | JSON: <br> <pre>{ "titulo": "...", "descripcion": "...", "monto": 0, "solicitante": "...", "aprobadores": \[ {"nombre": "...", "correo": "..."}, ... ] }</pre> | <pre>{ "solicitudId": "...", "mensaje": "...", "links": \[ "[https://dominio.com/approve](https://dominio.com/approve)?..." ] }</pre> |
+| GET    | `/solicitudes`                              | Listar todas las solicitudes (para solicitante) | —                                                                                                                                                              | Array de solicitudes<br><pre>\[{"id": {"S": "..."}, ... }]</pre>                                                                      |
+| GET    | `/solicitudes/validar-acceso?token={token}` | Validar token de aprobador y obtener detalle    | Param: token (en query)                                                                                                                                        | <pre>{ "aprobador": { ... }, "solicitud": { ... } }</pre>                                                                             |
+| POST   | `/solicitudes/firma`                        | Firmar o rechazar una solicitud                 | JSON: <br><pre>{ "solicitudId": "...", "token": "...", "accion": "aprobar" }</pre>                                                                             | <pre>{ "message": "...", "fechaFirma": "..." }</pre>                                                                                  |
+| GET    | `/api/solicitudes/{id}/evidencia.pdf`       | Descargar PDF de evidencias                     | Param: id (en path)                                                                                                                                            | <pre>{ "url": "[https://...amazonaws.com/...pdf](https://...amazonaws.com/...pdf)?..." }</pre>                                        |
+
+
 
 
 
 ---
 
-## ⚙️ Funcionalidades Principales
+## 🧪 Cómo probar los endpoints (Postman/curl)
 
-### ✅ Crear Solicitud
-**POST /api/solicitudes**
+### 1. Crear una Solicitud
 
-- Registra una solicitud en estado **Pendiente**.
-- Asocia 3 aprobadores.
-- Genera tokens únicos (UUID) y links de firma.
+**POST /solicitudes**
 
-### 🔐 Validar Acceso por OTP
-**POST /api/solicitudes/validar-acceso**
-
-- Recibe un token OTP.
-- Verifica que el OTP sea válido y no haya expirado.
-- Devuelve el `aprobadorId` asociado o error si es inválido o expirado.
-
-### ✍️ Firmar Solicitud
-**POST /api/firmar**
-
-- Valida el token.
-- Actualiza el estado del aprobador a **Firmado**.
-- Si los 3 aprueban, actualiza la solicitud a **Completada**.
-- Genera y almacena el PDF de evidencia en S3.
-
-### 📥 Descargar PDF de Evidencia
-**GET /api/solicitudes/{id}/evidencia.pdf**
-
-- Devuelve una URL firmada de S3 para descargar el PDF de evidencia.
-
----
-
-## 🔐 Seguridad y Tokens
-
-- Los tokens OTP expiran a los **3 minutos**.
-- Se almacena un registro temporal de OTP en DynamoDB con TTL.
-- No se usa firma criptográfica, solo marcas de tiempo simuladas.
-
----
-
-## 📦 Despliegue con Serverless Framework
-
-### Requisitos
-
-- Tener configurado AWS CLI
-- Tener instalado Serverless Framework: `npm install -g serverless`
-
-### Comandos útiles
-
+#### Usando curl:
 ```bash
-sls deploy                         # Despliega todas las Lambdas
-sls invoke -f createSolicitud      # Invoca función localmente
-sls logs -f firmarSolicitud        # Ver logs de una función
+curl -X POST https://<TU-API-GATEWAY>/solicitudes \
+  -H "Content-Type: application/json" \
+  -d '{
+    "titulo": "Compra de equipos 2",
+    "descripcion": "Adquisición de 3 laptops",
+    "monto": 4500000,
+    "solicitante": "carlos@example.com",
+    "aprobadores": [
+      { "nombre": "Juan", "correo": "juan@example.com" },
+      { "nombre": "Ana", "correo": "ana@example.com" },
+      { "nombre": "Luis", "correo": "luis@example.com" }
+    ]
+  }'
 
+Usando Postman:
+Crea una nueva petición POST.
 
-🧪 Pruebas
+URL: https://<TU-API-GATEWAY>/solicitudes
 
-npm install
-npm test
-npm run test:coverage
+Body → raw → JSON:
 
-
-🔧 Endpoints Disponibles
-Método	 Endpoint	                                    Descripción
-POST	 /api/solicitudes	                            Crear una solicitud
-POST	 /api/solicitudes/validar-acceso	            Validar token OTP
-POST	 /api/firmar	                                Firmar solicitud con token
-GET	     /api/solicitudes/{id}/evidencia.pdf	        Descargar evidencia en PDF desde S3
+{
+  "titulo": "Compra de equipos 2",
+  "descripcion": "Adquisición de 3 laptops",
+  "monto": 4500000,
+  "solicitante": "carlos@example.com",
+  "aprobadores": [
+    { "nombre": "Juan", "correo": "juan@example.com" },
+    { "nombre": "Ana", "correo": "ana@example.com" },
+    { "nombre": "Luis", "correo": "luis@example.com" }
+  ]
+}
 
 
 
