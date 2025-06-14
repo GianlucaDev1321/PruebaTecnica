@@ -54,7 +54,9 @@ export const createSolicitud = async (data: CreateSolicitudDTO) => {
       expiresAt: expiration,
     });
 
-    const link = `http://localhost:3000/approve?solicitud_id=${solicitudId}&approver_token=${aprobador.token}`;
+    const link = `https://d1c7drnfc9stg6.cloudfront.net/approve?solicitud_id=${solicitudId}&approver_token=${aprobador.token}`;
+    // const link = `http://localhost:3000/approve?solicitud_id=${solicitudId}&approver_token=${aprobador.token}`;
+
     await enviarCorreoSimulado(aprobador.correo, link);
     links.push(link);
   }

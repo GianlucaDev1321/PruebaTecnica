@@ -1,5 +1,8 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
-import AprobarSolicitud from '../pages/AprobarSolicitud';
+
+
+import ValidarToken from '../pages/ValidarToken';
+import FirmarSolicitud from '../pages/FirmarSolicitud';
 
 const AprobadorRoutes = () => {
   const location = useLocation();
@@ -7,7 +10,8 @@ const AprobadorRoutes = () => {
 
   return (
     <Routes>
-      <Route path="/" element={<AprobarSolicitud />} />
+      <Route path="/" element={<ValidarToken />} />
+      <Route path="/firmar" element={<FirmarSolicitud />} />
     </Routes>
   );
 };

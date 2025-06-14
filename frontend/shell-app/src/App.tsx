@@ -5,6 +5,7 @@ const Solicitudes = lazy(() => import('solicitanteApp/Solicitudes'));
 const Aprobador = lazy(() => import('aprobadorApp/Aprobador'));
 
 
+
 function App() {
   return (
     <BrowserRouter>
@@ -13,7 +14,7 @@ function App() {
           <Route path="/" element={<Navigate to="/solicitante" replace />} />
           <Route path="/solicitante/*" element={<Solicitudes />} />
           <Route path="/aprobador/*" element={<Aprobador />} />
-          <Route path="/approve" element={<Aprobador />} />
+          <Route path="/approve/*" element={<Aprobador />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

@@ -31,6 +31,7 @@ import federation from '@originjs/vite-plugin-federation';
 import { configDefaults } from 'vitest/config';
 
 export default defineConfig({
+  base: '/solicitante/',
   plugins: [
     react(),
     federation({
